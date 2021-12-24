@@ -10,14 +10,7 @@ import BackgroundTasks
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, URLSessionDelegate {
-    
-    private lazy var urlSession: URLSession = {
-        let config = URLSessionConfiguration.background(withIdentifier: "MySession")
-        config.isDiscretionary = true
-        config.sessionSendsLaunchEvents = true
-        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
-    }()
-    
+        
     var window: UIWindow?
     var appCoordinator: AppCoordinator?
     
@@ -27,8 +20,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, URLSessionDelegate {
         appCoordinator = AppCoordinator(window: window!)
         appCoordinator?.start()
         
-        registerBackgroundTasks()
 //        UserDefaults.standard.removeObject(forKey: "backgroundTask")
+        /// for test
+        registerBackgroundTasks()
+        
+        sendRequest { t in
+            print(t)
+        }
         
         return true
     }
@@ -52,10 +50,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, URLSessionDelegate {
                 task.setTaskCompleted(success: false)
             }
             
-            self?.sendRequest { response in
-                UserDefaults.standard.set("trigged", forKey: "backgroundTask")
-                
-                task.setTaskCompleted(success: response)
+            self!.sendRequest { response in
+                NotificationCenter.default.post(name: .requestSent,
+                                                object: self,
+                                                userInfo: nil)
+                task.setTaskCompleted(success: true)
             }
         }
 
@@ -77,45 +76,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, URLSessionDelegate {
     }
     
     func sendRequest (completion: @escaping (Bool) -> Void) {
-//        let queryItem = URLQueryItem(name: "time", value: "27-06-2001")
-//        var urlComponent = URLComponents(string: "https://alvrdtech.com/api/v1/kanan-test")
-//        urlComponent?.queryItems = [queryItem]
-//
-//        if let url = URL(string: "https://google.com") {
-//            let request = URLRequest(url: url)
-//
-//            let session = URLSession(configuration: .background(withIdentifier: "com.example.fooBackgroundAppRefreshIdentifier"))
-//            session.dataTask(with: request) { data, response, error in
-//                if let error = error {
-//                    print(error.localizedDescription)
-//                } else {
-//                    if let data = data {
-//                        print(String(data: data, encoding: .utf8))
-//                    }
-//                }
-//            }.resume()
-//        }
-        
-        let backgroundTask = urlSession.dataTask(with: URL(string: "https://google.com")!) { data, response, error in
-            if let error = error {
-                print(error.localizedDescription)
-            } else {
-                if let data = data {
-                    print(String(data: data, encoding: .utf8))
+        if let url = URL(string: "http://185.233.35.24:8192/") {
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+
+            let session = URLSession(configuration: .default)
+            session.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print(error.localizedDescription)
+                    completion(false)
+                } else {
+                    completion(true)
                 }
-            }
+            }.resume()
         }
-        backgroundTask.resume()
-        
-        
     }
-    
-    func application(_ application: UIApplication,
-                     handleEventsForBackgroundURLSession identifier: String,
-                     completionHandler: @escaping () -> Void) {
-            
-    }
-    
 
 }
 
