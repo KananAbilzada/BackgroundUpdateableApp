@@ -19,14 +19,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, URLSessionDelegate {
         window = UIWindow()
         appCoordinator = AppCoordinator(window: window!)
         appCoordinator?.start()
-        
-//        UserDefaults.standard.removeObject(forKey: "backgroundTask")
+
         /// for test
         registerBackgroundTasks()
-        
-        sendRequest { t in
-            print(t)
-        }
         
         return true
     }
@@ -50,10 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, URLSessionDelegate {
                 task.setTaskCompleted(success: false)
             }
             
-            self!.sendRequest { response in
-                NotificationCenter.default.post(name: .requestSent,
-                                                object: self,
-                                                userInfo: nil)
+            self?.sendRequest { response in
+                UserDefaults.standard.set("trigged", forKey: "backgroundTask")
                 task.setTaskCompleted(success: true)
             }
         }
@@ -61,7 +54,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, URLSessionDelegate {
     }
     
     func submitBackgroundTasks() {
-        let timeDelay = 10.0
+        /// any time as a second -- below for 1 minute
+        let timeDelay = 60.0
         
         do {
             let backgroundAppRefreshTaskRequest = BGAppRefreshTaskRequest(identifier: backgroundAppRefreshTaskSchedulerIdentifier)

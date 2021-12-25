@@ -15,14 +15,6 @@ class MainViewController: UIViewController, Storyboarded {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        NotificationCenter.default.addObserver(
-            forName: .requestSent,
-          object: nil,
-          queue: nil) { (notification) in
-            print("notification received")
-              UserDefaults.standard.set("trigged", forKey: "backgroundTask")
-        }
-        
         if let _ = UserDefaults.standard.value(forKey: "backgroundTask") as? String {
             infoLabel.text = "Triggered"
         } else {
